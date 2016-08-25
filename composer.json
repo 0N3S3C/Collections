@@ -1,0 +1,20 @@
+{
+    "name": "jjware/collections",
+    "description": "Library for working with collections in PHP",
+    "keywords": ["library", "collections"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [{
+      "name": "Joshua Jones",
+      "email": "joshua.jones.software@gmail.com"
+    }],
+    "autoload": {
+        "psr-4": {"Collections\\": "src"}
+    },
+    "require": {
+        "php": ">=5.5.0"
+    },
+    "require-dev": {
+      "phpUnit/phpUnit": "^5.0"
+    }
+}
