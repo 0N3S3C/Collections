@@ -4,19 +4,49 @@ namespace Collections;
 
 class QueueTest extends \PHPUnit_Framework_TestCase
 {
-    public function testEnqueuePeekDequeue()
+    public function testEnqueue()
     {
         $queue = new Queue();
-        $queue->enqueue("one");
-        $queue->enqueue("two");
 
-        $this->assertEquals(array("one", "two"), Enumerable::toArray($queue));
+        $queue->enqueue('one');
 
-        $this->assertEquals("one", $queue->peek());
+        $this->assertEquals(new Queue(['one']), $queue);
 
-        $this->assertEquals("one", $queue->dequeue());
+        $queue->enqueue('two');
 
-        $this->assertEquals(array("two"), Enumerable::toArray($queue));
+        $this->assertEquals(new Queue(['one', 'two']), $queue);
+
+        $queue->enqueue('three');
+
+        $this->assertEquals(new Queue(['one', 'two', 'three']), $queue);
+    }
+
+    public function testPeek()
+    {
+        $queue = new Queue(['one', 'two', 'three']);
+
+        $result = $queue->peek();
+
+        $this->assertEquals('one', $result);
+
+        $this->assertEquals(new Queue(['one', 'two', 'three']), $queue);
+    }
+
+    public function testDequeue()
+    {
+        $queue = new Queue(['one', 'two', 'three']);
+
+        $result = $queue->dequeue();
+
+        $this->assertEquals('one', $result);
+
+        $result = $queue->dequeue();
+
+        $this->assertEquals('two', $result);
+
+        $result = $queue->dequeue();
+
+        $this->assertEquals('three', $result);
     }
 
     /**
@@ -25,20 +55,40 @@ class QueueTest extends \PHPUnit_Framework_TestCase
     public function testDequeueUnderFlow()
     {
         $queue = new Queue();
+
         $queue->dequeue();
     }
 
-    public function testForEach()
+    public function testCopyToDefaultBehavior()
     {
-        $array = array("one", "two", "three");
-        $queue = new Queue($array);
+        $queue = new Queue(['one', 'two', 'three']);
 
-        $ctr = 0;
+        $array = [];
 
-        foreach ($queue as $key => $value) {
-            $this->assertEquals($ctr, $key);
-            $this->assertEquals($array[$ctr], $value);
-            $ctr++;
-        }
+        $queue->copyTo($array);
+
+        $this->assertEquals(['one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexInMiddle()
+    {
+        $queue = new Queue(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing', 'now', 'done'];
+
+        $queue->copyTo($array, 2);
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexAtEnd()
+    {
+        $queue = new Queue(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing'];
+
+        $queue->copyTo($array, count($array));
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
     }
 }

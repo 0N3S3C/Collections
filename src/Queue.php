@@ -7,7 +7,6 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
     use EnumerableExtensions;
     
     private $objects;
-    private $position = 0;
 
     /**
      * Queue constructor.
@@ -16,7 +15,6 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
     public function __construct(array $array = [])
     {
         $this->objects = $array;
-        $this->position = 0;
     }
 
     /**
@@ -32,7 +30,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      * @param $index
      * @throws InvalidArgumentException
      */
-    public function copyTo(array &$array, $index)
+    public function copyTo(array &$array, $index = 0)
     {
         if ($index < 0) {
             throw new InvalidArgumentException("Index must be a non negative number");
@@ -77,7 +75,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
     }
 
     /**
-     * @return ArrayEnumerator
+     * @return \Iterator
      */
     public function getIterator()
     {
