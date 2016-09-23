@@ -66,9 +66,8 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      * @param array $array
      * @param $index
      * @throws InvalidArgumentException
-     * @return void
      */
-    public function copyTo(array &$array, $index)
+    public function copyTo(array &$array, $index = 0)
     {
         if ($index < 0) {
             throw new InvalidArgumentException("Index must be a non negative number");

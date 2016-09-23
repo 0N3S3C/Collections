@@ -6,35 +6,61 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
 {
     public function testAdd()
     {
-        $list = new Collection();
-        $list->add(1);
-        $list->add(2);
+        $collection = new Collection();
 
-        $this->assertEquals([1, 2], $list->toArray());
+        $collection->add('one');
+
+        $this->assertEquals(new Collection(['one']), $collection);
+
+        $collection->add('two');
+
+        $this->assertEquals(new Collection(['one', 'two']), $collection);
+
+        $collection->add('three');
+
+        $this->assertEquals(new Collection(['one', 'two', 'three']), $collection);
     }
 
     public function testClear()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
-        $list->add("three");
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $list->clear();
+        $collection->clear();
 
-        $this->assertEquals([], $list->toArray());
+        $this->assertEquals(new Collection([]), $collection);
     }
 
-    public function testCopyTo()
+    public function testCopyToDefaultBehavior()
     {
-        $array = [3, 4];
-        $list = new Collection();
-        $list->add(1);
-        $list->add(2);
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $list->copyTo($array, 2);
+        $array = [];
 
-        $this->assertEquals([3, 4, 1, 2], $array);
+        $collection->copyTo($array);
+
+        $this->assertEquals(['one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexInMiddle()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing', 'now', 'done'];
+
+        $collection->copyTo($array, 2);
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexAtEnd()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing'];
+
+        $collection->copyTo($array, count($array));
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
     }
 
     /**
@@ -42,10 +68,11 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testCopyToIndexLessThanZero()
     {
-        $array = [1, 2];
-        $list = new Collection();
+        $array = ['one', 'two', 'three'];
 
-        $list->copyTo($array, -1);
+        $collection = new Collection();
+
+        $collection->copyTo($array, -1);
     }
 
     /**
@@ -53,24 +80,30 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
      */
     public function testCopyToIndexNan()
     {
-        $array = [1, 2];
-        $list = new Collection();
+        $array = ['one', 'two', 'three'];
 
-        $list->copyTo($array, 'j');
+        $collection = new Collection();
+
+        $collection->copyTo($array, 'j');
     }
 
     public function testExists()
     {
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $result = $list->exists(function ($object) {
-            return $object > 4;
+        $result = $collection->exists(function ($object) {
+            return strlen($object) > 3;
         });
 
         $this->assertTrue($result);
+    }
 
-        $result = $list->exists(function ($object) {
-            return $object === "3";
+    public function testExistsWhenNot()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $result = $collection->exists(function ($object) {
+            return $object === 'four';
         });
 
         $this->assertFalse($result);

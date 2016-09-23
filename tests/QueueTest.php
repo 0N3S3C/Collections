@@ -29,6 +29,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('one', $result);
 
+        // assert that the Queue is left unchanged
         $this->assertEquals(new Queue(['one', 'two', 'three']), $queue);
     }
 
@@ -40,13 +41,19 @@ class QueueTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals('one', $result);
 
+        $this->assertEquals(new Queue(['two', 'three']), $queue);
+
         $result = $queue->dequeue();
 
         $this->assertEquals('two', $result);
 
+        $this->assertEquals(new Queue(['three']), $queue);
+
         $result = $queue->dequeue();
 
         $this->assertEquals('three', $result);
+
+        $this->assertEquals(new Queue([]), $queue);
     }
 
     /**
@@ -90,5 +97,29 @@ class QueueTest extends \PHPUnit_Framework_TestCase
         $queue->copyTo($array, count($array));
 
         $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    /**
+     * @expectedException \Collections\InvalidArgumentException
+     */
+    public function testCopyToIndexLessThanZero()
+    {
+        $array = ['one', 'two', 'three'];
+
+        $queue = new Queue();
+
+        $queue->copyTo($array, -1);
+    }
+
+    /**
+     * @expectedException \Collections\InvalidArgumentException
+     */
+    public function testCopyToIndexNan()
+    {
+        $array = ['one', 'two', 'three'];
+
+        $queue = new Queue();
+
+        $queue->copyTo($array, 'j');
     }
 }
