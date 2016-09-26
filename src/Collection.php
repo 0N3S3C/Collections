@@ -311,7 +311,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     }
 
     /**
-     * @param $index
+     * @param int $index
      * @throws InvalidArgumentException
      * @throws ArgumentException
      * @throws ArgumentOutOfRangeException
@@ -335,24 +335,28 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     }
 
     /**
-     * @param $index
-     * @param $count
-     * @throws ArgumentException
+     * @param int $index
+     * @param int $count
+     * @throws InvalidArgumentException
      * @throws ArgumentOutOfRangeException
      * @return void
      */
     public function removeRange($index, $count)
     {
-        if ($index < 0) {
-            throw new ArgumentOutOfRangeException("Index is not valid ({$index})");
+        if (!is_numeric($index) || $index < 0) {
+            throw new InvalidArgumentException('Index is not valid. Got: ' . $index);
         }
 
-        if ($count < 0) {
-            throw new ArgumentOutOfRangeException("Count is not valid ({$count})");
+        if (!is_numeric($count) || $count < 0) {
+            throw new InvalidArgumentException('Count is not valid. Got: ' . $count);
         }
 
-        if ($index + $count > $this->count()) {
-            throw new InvalidArgumentException("The range provided is not valid");
+        if ($index > ($this->count() - 1)) {
+            throw new ArgumentOutOfRangeException('Index out of range. Got: ' . $index);
+        }
+
+        if ($count > ($this->count() - $index)) {
+            throw new ArgumentOutOfRangeException('The range provided is out of bounds');
         }
 
         for ($i = $index; $count > 0; $count--) {
