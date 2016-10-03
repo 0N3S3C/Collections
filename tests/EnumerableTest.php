@@ -2,31 +2,6 @@
 
 namespace Collections;
 
-class MockEnumerable implements EnumerableInterface
-{
-    private $objects = [];
-
-    public function add($object)
-    {
-        $this->objects[] = $object;
-    }
-
-    public function clear()
-    {
-        $this->objects = [];
-    }
-
-    public function getIterator()
-    {
-        return new ArrayEnumerator($this->objects);
-    }
-
-    public function toArray()
-    {
-        return $this->objects;
-    }
-}
-
 class LengthEqualityComparer implements EqualityComparerInterface
 {
     public function equals($x, $y)
@@ -37,83 +12,88 @@ class LengthEqualityComparer implements EqualityComparerInterface
 
 class EnumerableTest extends \PHPUnit_Framework_TestCase
 {
-    public function testAll()
+    public function testAllWhenSame()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("one");
-        $object->add("one");
+        $enumerable = new Enumerable(['one', 'one', 'one']);
 
-        $result = Enumerable::all($object, function ($test) {
-            return $test == "one";
+        $result = $enumerable->all(function ($test) {
+            return $test == 'one';
         });
+
         $this->assertTrue($result);
-
-        $object->add("two");
-
-        $result = Enumerable::all($object, function ($test) {
-            return $test == "one";
-        });
-        $this->assertFalse($result);
     }
 
-    public function testAny()
+    public function testAllWhenNotSame()
     {
-        $object = new MockEnumerable();
+        $enumerable = new Enumerable(['one', 'two', 'one']);
 
-        $this->assertFalse(Enumerable::any($object));
-
-        $object->add("one");
-
-        $this->assertTrue(Enumerable::any($object));
-
-        $object->add("two");
-        $object->add("three");
-
-        $result = Enumerable::any($object, function ($x) {
-            return $x == "two";
-        });
-
-        $this->assertTrue($result);
-
-        $result = Enumerable::any($object, function ($x) {
-            return $x == "four";
+        $result = $enumerable->all(function ($test) {
+            return $test == 'one';
         });
 
         $this->assertFalse($result);
     }
 
-    public function testContains()
+    public function testAnyWhenEmpty()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable([]);
 
-        $this->assertTrue(Enumerable::contains($object, "two"));
-        $this->assertFalse(Enumerable::contains($object, "four"));
+        $result = $enumerable->any(function ($x) {
+            return $x === 'one';
+        });
+
+        $this->assertFalse($result);
+    }
+
+    public function testAnyWhenExists()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->any(function ($x) {
+            return $x === 'two';
+        });
+
+        $this->assertTrue($result);
+    }
+
+    public function testAnyWhenNotExists()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->any(function ($x) {
+            return $x === 'four';
+        });
+
+        $this->assertFalse($result);
+    }
+
+    public function testContainsWhenExists()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $this->assertTrue($enumerable->contains('two'));
+    }
+
+    public function testContainsWhenNotExists()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $this->assertFalse($enumerable->contains('four'));
     }
 
     public function testCount()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals(3, Enumerable::count($object));
+        $this->assertEquals(3, $enumerable->count());
     }
 
     public function testCountWhere()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'two', 'three']);
 
-        $result = Enumerable::countWhere($object, function ($test) {
-            return $test == "two";
+        $result = $enumerable->countWhere(function ($x) {
+            return $x == 'two';
         });
 
         $this->assertEquals(2, $result);
@@ -121,242 +101,172 @@ class EnumerableTest extends \PHPUnit_Framework_TestCase
 
     public function testDistinct()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'two', 'three']);
 
-        $result = Enumerable::toArray(Enumerable::distinct($object));
+        $result = $enumerable->distinct();
 
-        $this->assertEquals(["one", "two", "three"], $result);
+        $this->assertEquals(new Enumerable(['one', 'two', 'three']), $result);
     }
 
     public function testDistinctWhere()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'dos', 'three']);
 
-        $result = Enumerable::toArray(Enumerable::distinctWhere($object, new LengthEqualityComparer()));
+        $result = $enumerable->distinctWhere(new LengthEqualityComparer());
 
-        $this->assertEquals(["one", "three"], $result);
+        $this->assertEquals(new Enumerable(['one', 'three']), $result);
+    }
+
+    public function testElementAtInRange()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->elementAt(1);
+
+        $this->assertEquals('two', $result);
     }
 
     /**
-     * @expectedException \Collections\IndexOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
-    public function testElementAt()
+    public function testElementAtOutOfRange()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals("two", Enumerable::elementAt($object, 1));
-        Enumerable::elementAt($object, 5);
+        $enumerable->elementAt(3);
     }
 
-    public function testElementAtOrDefault()
+    public function testElementAtOrDefaultInRange()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals("two", Enumerable::elementAtOrDefault($object, 1, null));
-        $this->assertEquals(null, Enumerable::elementAtOrDefault($object, 5, null));
+        $result = $enumerable->elementAtOrDefault(1, null);
+
+        $this->assertEquals('two', $result);
+    }
+
+    public function testElementAtOrDefaultOutOfRange()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->elementAtOrDefault(3, null);
+
+        $this->assertEquals(null, $result);
     }
 
     public function testExcept()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $result = Enumerable::toArray(Enumerable::except($object, ["one", "three"]));
+        $result = $enumerable->except(['one', 'three']);
 
-        $this->assertEquals(["two"], $result);
+        $this->assertEquals(new Enumerable(['two']), $result);
     }
 
     public function testExceptWhere()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $result = Enumerable::toArray(Enumerable::exceptWhere($object, ["nah"], new LengthEqualityComparer()));
+        $result = $enumerable->exceptWhere(['len'], new LengthEqualityComparer());
 
-        $this->assertEquals(["three"], $result);
+        $this->assertEquals(new Enumerable(['three']), $result);
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
-    public function testFirst()
+    public function testFirstWhenEmpty()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable([]);
 
-        $this->assertEquals("one", Enumerable::first($object));
+        $enumerable->first();
+    }
 
-        $object->clear();
-        Enumerable::first($object);
+    public function testFirstWhenPopulated()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->first();
+
+        $this->assertEquals('one', $result);
+    }
+
+    public function testFirstOrDefaultWhenEmpty()
+    {
+        $enumerable = new Enumerable([]);
+
+        $result = $enumerable->firstOrDefault('empty');
+
+        $this->assertEquals('empty', $result);
+    }
+
+    public function testFirstOrDefaultWhenPopulated()
+    {
+        $enumerable = new Enumerable(['one', 'two', 'three']);
+
+        $result = $enumerable->firstOrDefault('empty');
+
+        $this->assertEquals('one', $result);
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
-    public function testFirstWhere()
+    public function testLastWhenEmpty()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable([]);
 
-        $result = Enumerable::firstWhere($object, function ($test) {
-            return strlen($test) > 3;
-        });
-
-        $this->assertEquals("three", $result);
-
-        Enumerable::firstWhere($object, function ($test) {
-            return strlen($test) > 6;
-        });
+        $enumerable->last();
     }
 
-    public function testFirstOrDefault()
+    public function testLastWhenPopulated()
     {
-        $object = new MockEnumerable();
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals(null, Enumerable::firstOrDefault($object, null));
+        $result = $enumerable->last();
 
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
-
-        $this->assertEquals("one", Enumerable::firstOrDefault($object, null));
+        $this->assertEquals('three', $result);
     }
 
-    public function testFirstOrDefaultWhere()
+    public function testLastOrDefaultWhenEmpty()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable([]);
 
-        $result = Enumerable::firstOrDefaultWhere($object, function ($test) {
-            return strlen($test) > 3;
-        }, null);
+        $result = $enumerable->lastOrDefault('empty');
 
-        $this->assertEquals("three", $result);
-
-        $result = Enumerable::firstOrDefaultWhere($object, function ($test) {
-            return strlen($test) > 6;
-        }, null);
-
-        $this->assertEquals(null, $result);
+        $this->assertEquals('empty', $result);
     }
 
-    /**
-     * @expectedException \Collections\InvalidOperationException
-     */
-    public function testLast()
+    public function testLastOrDefaultWhenPopulated()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals("three", Enumerable::last($object));
+        $result = $enumerable->lastOrDefault('empty');
 
-        $object->clear();
-        Enumerable::last($object);
-    }
-
-    /**
-     * @expectedException \Collections\InvalidOperationException
-     */
-    public function testLastWhere()
-    {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
-        $object->add("four");
-
-        $result = Enumerable::lastWhere($object, function ($test) {
-            return strlen($test) > 3;
-        });
-
-        $this->assertEquals("four", $result);
-
-        Enumerable::lastWhere($object, function ($test) {
-            return strlen($test) > 6;
-        });
-    }
-
-    public function testLastOrDefault()
-    {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
-
-        $this->assertEquals("three", Enumerable::lastOrDefault($object, null));
-
-        $object->clear();
-
-        $this->assertEquals(null, Enumerable::lastOrDefault($object, null));
-    }
-
-    public function testLastOrNullWhere()
-    {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
-        $object->add("four");
-
-        $result = Enumerable::lastOrDefaultWhere($object, function ($test) {
-            return strlen($test) > 3;
-        }, null);
-
-        $this->assertEquals("four", $result);
-
-        $result = Enumerable::lastOrDefaultWhere($object, function ($test) {
-            return strlen($test) > 6;
-        }, null);
-
-        $this->assertEquals(null, $result);
+        $this->assertEquals('three', $result);
     }
 
     public function testOfType()
     {
-        $object = new MockEnumerable();
-        $object->add(new MockEnumerable());
-        $object->add(new LengthEqualityComparer());
-        $object->add(new \stdClass());
-        $object->add(new MockEnumerable());
+        $enumerable = new Enumerable([
+            new \stdClass(),
+            new Enumerable([]),
+            new \stdClass(),
+            new LengthEqualityComparer(),
+            new \stdClass()
+        ]);
 
-        $result = Enumerable::toArray(Enumerable::ofType($object, "Collections\\MockEnumerable"));
+        $result = $enumerable->ofType('stdClass');
 
-        $this->assertEquals([new MockEnumerable(), new MockEnumerable()], $result);
+        $this->assertEquals(new Enumerable([new \stdClass(), new \stdClass(), new \stdClass()]), $result);
     }
 
     public function testToArray()
     {
-        $object = new MockEnumerable();
-        $object->add("one");
-        $object->add("two");
-        $object->add("three");
+        $enumerable = new Enumerable(['one', 'two', 'three']);
 
-        $this->assertEquals(["one", "two", "three"], $object->toArray());
+        $result = $enumerable->toArray();
+
+        $this->assertEquals(['one', 'two', 'three'], $result);
     }
 }

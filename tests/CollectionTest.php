@@ -6,71 +6,104 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
 {
     public function testAdd()
     {
-        $list = new Collection();
-        $list->add(1);
-        $list->add(2);
+        $collection = new Collection();
 
-        $this->assertEquals([1, 2], $list->toArray());
+        $collection->add('one');
+
+        $this->assertEquals(new Collection(['one']), $collection);
+
+        $collection->add('two');
+
+        $this->assertEquals(new Collection(['one', 'two']), $collection);
+
+        $collection->add('three');
+
+        $this->assertEquals(new Collection(['one', 'two', 'three']), $collection);
     }
 
     public function testClear()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
-        $list->add("three");
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $list->clear();
+        $collection->clear();
 
-        $this->assertEquals([], $list->toArray());
+        $this->assertEquals(new Collection([]), $collection);
     }
 
-    public function testCopyTo()
+    public function testCopyToDefaultBehavior()
     {
-        $array = [3, 4];
-        $list = new Collection();
-        $list->add(1);
-        $list->add(2);
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $list->copyTo($array, 2);
+        $array = [];
 
-        $this->assertEquals([3, 4, 1, 2], $array);
+        $collection->copyTo($array);
+
+        $this->assertEquals(['one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexInMiddle()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing', 'now', 'done'];
+
+        $collection->copyTo($array, 2);
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexAtEnd()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing'];
+
+        $collection->copyTo($array, count($array));
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \OutOfRangeException
      */
     public function testCopyToIndexLessThanZero()
     {
-        $array = [1, 2];
-        $list = new Collection();
+        $array = ['one', 'two', 'three'];
 
-        $list->copyTo($array, -1);
+        $collection = new Collection();
+
+        $collection->copyTo($array, -1);
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testCopyToIndexNan()
     {
-        $array = [1, 2];
-        $list = new Collection();
+        $array = ['one', 'two', 'three'];
 
-        $list->copyTo($array, 'j');
+        $collection = new Collection();
+
+        $collection->copyTo($array, 'j');
     }
 
     public function testExists()
     {
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $result = $list->exists(function ($object) {
-            return $object > 4;
+        $result = $collection->exists(function ($object) {
+            return strlen($object) > 3;
         });
 
         $this->assertTrue($result);
+    }
 
-        $result = $list->exists(function ($object) {
-            return $object === "3";
+    public function testExistsWhenNot()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $result = $collection->exists(function ($object) {
+            return $object === 'four';
         });
 
         $this->assertFalse($result);
@@ -78,15 +111,20 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
 
     public function testFind()
     {
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
 
-        $result = $list->find(function ($object) {
+        $result = $collection->find(function ($object) {
             return $object > 4;
         });
 
         $this->assertEquals(5, $result);
+    }
 
-        $result = $list->find(function ($object) {
+    public function testFindWhenNot()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
+
+        $result = $collection->find(function ($object) {
             return $object === "3";
         });
 
@@ -95,243 +133,306 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
 
     public function testFindAll()
     {
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
 
-        $result = $list->findAll(function ($object) {
+        $result = $collection->findAll(function ($object) {
             return $object > 3;
         });
 
-        $this->assertEquals([4, 5, 6], $result->toArray());
-
-        $result = $list->findAll(function ($object) {
-            return $object === "3";
-        });
-
-        $this->assertEquals([], $result->toArray());
+        $this->assertEquals(new Collection([4, 5, 6]), $result);
     }
 
-    public function testForEach()
+    public function testFindAllWhenNot()
     {
-        $array = ["one", "two", "three"];
-        $list = new Collection($array);
-        $ctr = 0;
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
 
-        foreach ($list as $key => $value) {
-            $this->assertEquals($ctr, $key);
-            $this->assertEquals($array[$ctr], $value);
-            $ctr++;
-        }
+        $result = $collection->findAll(function ($object) {
+            return $object > 7;
+        });
+
+        $this->assertEquals(new Collection([]), $result);
     }
 
     public function testGetItem()
     {
-        $list = new Collection();
-        $list->add(1);
+        $collection = new Collection([1, 2, 3]);
 
-        $this->assertEquals($list[0], 1);
+        $this->assertEquals($collection[1], 2);
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testGetItemOutOfBounds()
     {
-        $list = new Collection();
-        $list[0];
+        $collection = new Collection();
+
+        $collection[0];
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testGetItemInvalidArgument()
     {
-        $list = new Collection();
-        $list['j'];
+        $collection = new Collection();
+
+        $collection['j'];
     }
 
     public function testSetItem()
     {
-        $list = new Collection();
-        $list->add(1);
-        $list[0] = 2;
+        $collection = new Collection([1, 2, 3]);
 
-        $this->assertEquals($list[0], 2);
+        $collection[0] = 4;
+
+        $this->assertEquals(new Collection([4, 2, 3]), $collection);
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testSetItemOutOfBounds()
     {
-        $list = new Collection();
-        $list[0] = 2;
+        $collection = new Collection();
+        
+        $collection[0] = 2;
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testSetItemInvalidArgument()
     {
-        $list = new Collection();
-        $list->add(1);
-        $list['j'] = 2;
+        $collection = new Collection([1, 2, 3]);
+
+        $collection['j'] = 2;
     }
 
     public function testRemove()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
-        $list->remove("one");
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $this->assertEquals(["two"], $list->toArray());
+        $collection->remove('two');
+
+        $this->assertEquals(new Collection(['one', 'three']), $collection);
+    }
+
+    public function testRemoveWhenNot()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $collection->remove('four');
+
+        $this->assertEquals(new Collection(['one', 'two', 'three']), $collection);
     }
 
     public function testRemoveAt()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
-        $list->add("three");
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $list->removeAt(1);
+        $collection->removeAt(1);
 
-        $this->assertEquals(["one", "three"], $list->toArray());
+        $this->assertEquals(new Collection(['one', 'three']), $collection);
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testRemoveAtInvalidArgument()
     {
-        $list = new Collection();
-        $list->removeAt('j');
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $collection->removeAt('j');
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testRemoveAtOutOfRange()
     {
-        $list = new Collection();
-        $list->removeAt(1);
+        $collection = new Collection();
+
+        $collection->removeAt(1);
     }
 
     public function testRemoveAll()
     {
-        $list = new Collection([1, 2, 3, 4, 3, 5, 3]);
+        $collection = new Collection([3, 1, 2, 3, 4, 3, 5, 3]);
 
-        $list->removeAll(function ($object) {
+        $collection->removeAll(function ($object) {
             return $object === 3;
         });
 
-        $this->assertEquals([1, 2, 4, 5], $list->toArray());
+        $this->assertEquals(new Collection([1, 2, 4, 5]), $collection);
     }
 
-    public function testRemoveRange()
+    public function testRemoveRangeAtBeginning()
     {
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
-        $list->removeRange(0, 4);
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
 
-        $this->assertEquals([5, 6], $list->toArray());
+        $collection->removeRange(0, 4);
 
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
-        $list->removeRange(3, 3);
+        $this->assertEquals(new Collection([5, 6]), $collection);
+    }
 
-        $this->assertEquals([1, 2, 3], $list->toArray());
+    public function testRemoveRangeAtMiddle()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
 
-        $list = new Collection([1, 2, 3, 4, 5, 6]);
-        $list->removeRange(2, 2);
+        $collection->removeRange(3, 3);
 
-        $this->assertEquals([1, 2, 5, 6], $list->toArray());
+        $this->assertEquals(new Collection([1, 2, 3]), $collection);
+    }
+
+    public function testRemoveRangeAtEnd()
+    {
+        $collection = new Collection([1, 2, 3, 4, 5, 6]);
+
+        $collection->removeRange(4, 2);
+
+        $this->assertEquals(new Collection([1, 2, 3, 4]), $collection);
+    }
+
+    /**
+     * @expectedException \OutOfRangeException
+     */
+    public function testRemoveRangeOverflow()
+    {
+        $collection = new Collection([1, 2, 3]);
+
+        $collection->removeRange(2, 3);
+    }
+
+    /**
+     * @expectedException \OutOfRangeException
+     */
+    public function testRemoveRangeInvalidIndex()
+    {
+        $collection = new Collection([1, 2, 3]);
+
+        $collection->removeRange(3, 1);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testRemoveRangeInvalidTypeIndex()
+    {
+        $collection = new Collection([1, 2, 3]);
+
+        $collection->removeRange('j', 1);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testRemoveRangeInvalidTypeCount()
+    {
+        $collection = new Collection([1, 2, 3]);
+
+        $collection->removeRange(1, 'j');
     }
 
     public function testInsert()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
+        $collection = new Collection(['one', 'two']);
 
-        $list->insert(1, "three");
+        $collection->insert(1, 'three');
 
-        $this->assertEquals(["one", "three", "two"], $list->toArray());
+        $this->assertEquals(new Collection(['one', 'three', 'two']), $collection);
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testInsertInvalidArgument()
     {
-        $list = new Collection();
-        $list->insert('j', "one");
+        $collection = new Collection();
+
+        $collection->insert('j', 'one');
+    }
+
+    public function testInsertAtNextIndex()
+    {
+        $collection = new Collection(['one']);
+
+        $collection->insert(1, 'two');
+
+        $this->assertEquals(new Collection(['one', 'two']), $collection);
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
-    public function testInsertOutOfRange()
+    public function testInsertAtNextIndexPlusOne()
     {
-        $list = new Collection();
-        $list->insert(4, "one");
+        $collection = new Collection(['one']);
+
+        $collection->insert(2, 'two');
     }
 
-    public function testInsertPlusOne()
+    /**
+     * @expectedException \OutOfRangeException
+     */
+    public function testInsertAtNegativeIndex()
     {
-        $list = new Collection();
-        $list->add("one");
+        $collection = new Collection(['one']);
 
-        $list->insert(1, "two");
-
-        $this->assertEquals(["one", "two"], $list->toArray());
+        $collection->insert(-1, 'two');
     }
 
-    public function testIndexOf()
+    public function testIndexOfWhereExists()
     {
-        $list = new Collection();
-        $list->add("one");
-        $list->add("two");
-        $list->add("three");
+        $collection = new Collection(['one', 'two', 'three']);
 
-        $this->assertEquals(1, $list->indexOf("two"));
-        $this->assertEquals(-1, $list->indexOf("four"));
+        $result = $collection->indexOf('two');
+
+        $this->assertEquals(1, $result);
+    }
+
+    public function testIndexOfWhereExistMultiple()
+    {
+        $collection = new Collection(['one', 'two', 'one', 'three']);
+
+        $result = $collection->indexOf('one');
+
+        $this->assertEquals(0, $result);
+    }
+
+    public function testIndexOfWhereNotExists()
+    {
+        $collection = new Collection(['one', 'two', 'three']);
+
+        $result = $collection->indexOf('four');
+
+        $this->assertEquals(-1, $result);
     }
 
     public function testSortNumeric()
     {
-        $list = new Collection();
-        $list->add(2);
-        $list->add(5);
-        $list->add(3);
-        $list->add(1);
-        $list->add(4);
+        $collection = new Collection([2, 5, 3, 1, 4]);
 
-        $list->sort();
+        $collection->sort();
 
-        $this->assertEquals([1, 2, 3, 4, 5], $list->toArray());
+        $this->assertEquals(new Collection([1, 2, 3, 4, 5]), $collection);
     }
 
     public function testSortAlphaNumeric()
     {
-        $list = new Collection();
-        $list->add("img12.png");
-        $list->add("img2.png");
-        $list->add("img10.png");
-        $list->add("img1.png");
+        $collection = new Collection(['img12.png', 'img2.png', 'img10.png', 'img1.png']);
 
-        $list->sort();
+        $collection->sort();
 
-        $this->assertEquals(["img1.png", "img10.png", "img12.png", "img2.png"], $list->toArray());
+        $this->assertEquals(new Collection(['img1.png', 'img10.png', 'img12.png', 'img2.png']), $collection);
     }
 
     public function testSortWithNatural()
     {
-        $list = new Collection();
-        $list->add("img12.png");
-        $list->add("img2.png");
-        $list->add("img10.png");
-        $list->add("img1.png");
-        $list->sort(new NaturalStringComparer());
+        $collection = new Collection(['img12.png', 'img2.png', 'img10.png', 'img1.png']);
 
-        $this->assertEquals(["img1.png", "img2.png", "img10.png", "img12.png"], $list->toArray());
+        $collection->sort(new NaturalStringComparer());
+
+        $this->assertEquals(new Collection(['img1.png', 'img2.png', 'img10.png', 'img12.png']), $collection);
     }
 }

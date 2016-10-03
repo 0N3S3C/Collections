@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 trait EnumerableExtensions
 {
     /**
@@ -10,7 +13,17 @@ trait EnumerableExtensions
      */
     public function all(callable $predicate)
     {
-        return Enumerable::all($this, $predicate);
+        $satisfied = true;
+
+        foreach ($this as $object) {
+            $satisfied = call_user_func($predicate, $object);
+
+            if (!$satisfied) {
+                break;
+            }
+        }
+
+        return $satisfied;
     }
 
     /**
@@ -19,7 +32,24 @@ trait EnumerableExtensions
      */
     public function any(callable $predicate = null)
     {
-        return Enumerable::any($this, $predicate);
+        $qualifies = false;
+
+        if ($predicate == null) {
+
+            $predicate = function () {
+                return true;
+            };
+        }
+
+        foreach ($this as $object) {
+
+            if (call_user_func($predicate, $object)) {
+                $qualifies = true;
+                break;
+            }
+        }
+
+        return $qualifies;
     }
 
     /**
@@ -28,7 +58,17 @@ trait EnumerableExtensions
      */
     public function contains($object)
     {
-        return Enumerable::contains($this, $object);
+        $inArray = false;
+
+        foreach ($this as $item) {
+
+            if ($item == $object) {
+                $inArray = true;
+                break;
+            }
+        }
+
+        return $inArray;
     }
 
     /**
@@ -36,7 +76,13 @@ trait EnumerableExtensions
      */
     public function count()
     {
-        return Enumerable::count($this);
+        $counter = 0;
+
+        foreach ($this as $object) {
+            $counter++;
+        }
+
+        return $counter;
     }
 
     /**
@@ -45,84 +91,166 @@ trait EnumerableExtensions
      */
     public function countWhere(callable $predicate)
     {
-        return Enumerable::countWhere($this, $predicate);
+        $ctr = 0;
+
+        foreach ($this as $object) {
+
+            if (call_user_func($predicate, $object)) {
+                $ctr++;
+            }
+        }
+
+        return $ctr;
     }
 
     /**
-     * @return Collection
+     * @return Enumerable
      */
     public function distinct()
     {
-        return Enumerable::distinct($this);
+        return $this->distinctWhere(EqualityComparer::create());
     }
 
     /**
      * @param EqualityComparerInterface $comparer
-     * @return Collection
+     * @return Enumerable
      */
     public function distinctWhere(EqualityComparerInterface $comparer)
     {
-        return Enumerable::distinctWhere($this, $comparer);
+        $results = [];
+
+        foreach ($this as $object) {
+            $inArray = false;
+
+            foreach ($results as $result) {
+
+                if ($comparer->equals($object, $result)) {
+                    $inArray = true;
+                }
+            }
+
+            if (!$inArray) {
+                $results[] = $object;
+            }
+        }
+
+        return new Enumerable($results);
     }
 
     /**
      * @param $index
      * @return mixed|null
-     * @throws IndexOutOfRangeException
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
     public function elementAt($index)
     {
-        return Enumerable::elementAt($this, $index);
+        if (!is_numeric($index)) {
+            throw new ArgumentNotNumericException('index', $index);
+        }
+
+        if ($index < 0 || $index >= $this->count()) {
+            throw new ArgumentOutOfRangeException('index', $index);
+        }
+        $counter = 0;
+        $found = false;
+        $returnValue = null;
+
+        foreach ($this as $object) {
+
+            if ($counter == $index) {
+                $returnValue = $object;
+                $found = true;
+                break;
+            }
+            $counter++;
+        }
+
+        if (!$found) {
+            throw new ArgumentOutOfRangeException('index', $index);
+        }
+
+        return $returnValue;
     }
 
     /**
      * @param $index
      * @param null $default
      * @return mixed|null
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function elementAtOrDefault($index, $default = null)
     {
-        return Enumerable::elementAtOrDefault($this, $index, $default);
+        if (!is_numeric($index)) {
+            throw new ArgumentNotNumericException('index', $index);
+        }
+
+        if ($index < 0 || $index >= $this->count()) {
+            return null;
+        }
+        $counter = 0;
+        $returnValue = $default;
+
+        foreach ($this as $object) {
+
+            if ($counter == $index) {
+                $returnValue = $object;
+                break;
+            }
+            $counter++;
+        }
+
+        return $returnValue;
     }
 
     /**
      * @param array $array
-     * @return Collection
+     * @return Enumerable
      */
     public function except(array $array)
     {
-        return Enumerable::except($this, $array);
+        return $this->exceptWhere($array, EqualityComparer::create());
     }
 
     /**
      * @param array $array
      * @param EqualityComparerInterface $comparer
-     * @return Collection
+     * @return Enumerable
      */
     public function exceptWhere(array $array, EqualityComparerInterface $comparer)
     {
-        return Enumerable::exceptWhere($this, $array, $comparer);
+        $resultArray = $this->toArray();
+
+        foreach ($this as $outerKey => $outerValue) {
+
+            foreach ($array as $exclude) {
+
+                if ($comparer->equals($outerValue, $exclude) && isset($resultArray[$outerKey])) {
+                    unset($resultArray[$outerKey]);
+                }
+            }
+        }
+
+        return new Enumerable(array_values($resultArray));
     }
 
     /**
      * @return mixed|null
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function first()
     {
-        return Enumerable::first($this);
-    }
+        if (!$this->count($this)) {
+            throw new \UnderflowException("Cannot get first element of empty enumeration");
+        }
+        $returnValue = null;
 
-    /**
-     * @param callable $predicate
-     * @return mixed
-     * @throws InvalidOperationException
-     */
-    public function firstWhere(callable $predicate)
-    {
-        return Enumerable::firstWhere($this, $predicate);
+        foreach ($this as $object) {
+            $returnValue = $object;
+            break;
+        }
+
+        return $returnValue;
     }
 
     /**
@@ -131,36 +259,27 @@ trait EnumerableExtensions
      */
     public function firstOrDefault($default = null)
     {
-        return Enumerable::firstOrDefault($this, $default);
-    }
+        $returnValue = $default;
 
-    /**
-     * @param callable $predicate
-     * @param null $default
-     * @return mixed
-     */
-    public function firstOrDefaultWhere(callable $predicate, $default = null)
-    {
-        return Enumerable::firstOrDefaultWhere($this, $predicate, $default);
+        foreach ($this as $object) {
+            $returnValue = $object;
+            break;
+        }
+
+        return $returnValue;
     }
 
     /**
      * @return mixed|null
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function last()
     {
-        return Enumerable::last($this);
-    }
+        if (!$this->count()) {
+            throw new \UnderflowException("Cannot get last element of empty enumeration");
+        }
 
-    /**
-     * @param callable $predicate
-     * @return mixed
-     * @throws InvalidOperationException
-     */
-    public function lastWhere(callable $predicate)
-    {
-        return Enumerable::lastWhere($this, $predicate);
+        return $this->elementAt($this->count() - 1);
     }
 
     /**
@@ -169,35 +288,49 @@ trait EnumerableExtensions
      */
     public function lastOrDefault($default = null)
     {
-        return Enumerable::lastOrDefault($this, $default);
-    }
+        if (!$this->count()) {
+            return $default;
+        }
 
-    /**
-     * @param callable $predicate
-     * @param null $default
-     * @return mixed
-     */
-    public function lastOrDefaultWhere(callable $predicate, $default = null)
-    {
-        return Enumerable::lastOrDefaultWhere($this, $predicate, $default);
+        return $this->elementAt($this->count() - 1);
     }
 
     /**
      * @param $type
-     * @return Collection
+     * @return Enumerable
      */
     public function ofType($type)
     {
-        return Enumerable::ofType($this, $type);
+        $objects = [];
+
+        foreach ($this as $object) {
+
+            if (is_a($object, $type)) {
+                $objects[] = $object;
+            }
+        }
+
+        return new Enumerable($objects);
     }
 
     /**
      * @param $number
-     * @return Collection
+     * @return Enumerable
      */
     public function skip($number)
     {
-        return Enumerable::skip($this, $number);
+        $skip = $number;
+        $objects = [];
+
+        foreach ($this as $object) {
+
+            if (!$skip) {
+                $results[] = $object;
+            }
+            --$skip;
+        }
+
+        return new Enumerable($objects);
     }
 
     /**
@@ -205,15 +338,30 @@ trait EnumerableExtensions
      */
     public function toArray()
     {
-        return Enumerable::toArray($this);
+        $array = [];
+
+        foreach ($this as $key => $value) {
+            $array[$key] = $value;
+        }
+
+        return $array;
     }
 
     /**
      * @param callable $predicate
-     * @return Collection
+     * @return Enumerable
      */
     public function where(callable $predicate)
     {
-        return Enumerable::where($this, $predicate);
+        $results = [];
+
+        foreach ($this as $object) {
+
+            if (call_user_func($predicate, $object)) {
+                $results[] = $object;
+            }
+        }
+
+        return new Enumerable($results);
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 class Collection implements SeriesInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
@@ -65,17 +68,17 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     /**
      * @param array $array
      * @param $index
-     * @throws InvalidArgumentException
-     * @return void
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
-    public function copyTo(array &$array, $index)
+    public function copyTo(array &$array, $index = 0)
     {
         if ($index < 0) {
-            throw new InvalidArgumentException("Index must be a non negative number");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be a number");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         for ($i = 0; $i < count($this->objects); $i++) {
@@ -181,18 +184,18 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     /**
      * @param $index
      * @param $object
-     * @throws InvalidArgumentException
-     * @throws ArgumentOutOfRangeException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      * @return void
      */
     public function insert($index, $object)
     {
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         if ($index < 0 || $index > count($this->objects)) {
-            throw new ArgumentOutOfRangeException("Invalid index ({$index})");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         if ($index == count($this->objects)) {
@@ -213,13 +216,13 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
 
     /**
      * @param mixed $offset
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      * @return bool
      */
     public function offsetExists($offset)
     {
         if (!is_numeric($offset)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('offset', $offset);
         }
 
         return isset($this->objects[$offset]);
@@ -227,18 +230,18 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
 
     /**
      * @param mixed $offset
-     * @throws InvalidArgumentException
-     * @throws ArgumentOutOfRangeException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      * @return mixed
      */
     public function offsetGet($offset)
     {
         if (!is_numeric($offset)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('offset', $offset);
         }
 
         if (!$this->offsetExists($offset)) {
-            throw new ArgumentOutOfRangeException("Invalid index ({$offset})");
+            throw new ArgumentOutOfRangeException('offset', $offset);
         }
 
         return $this->objects[$offset];
@@ -247,31 +250,31 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     /**
      * @param mixed $offset
      * @param mixed $value
-     * @throws InvalidArgumentException
-     * @throws ArgumentOutOfRangeException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      * @return void
      */
     public function offsetSet($offset, $value)
     {
         if (!is_numeric($offset)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('offset', $offset);
         }
 
         if (!$this->offsetExists($offset)) {
-            throw new ArgumentOutOfRangeException("Invalid index ({$offset})");
+            throw new ArgumentOutOfRangeException('offset', $offset);
         }
         $this->objects[$offset] = $value;
     }
 
     /**
      * @param mixed $offset
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      * @return void
      */
     public function offsetUnset($offset)
     {
         if (!is_numeric($offset)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('offset', $offset);
         }
         $this->removeAt($offset);
     }
@@ -312,48 +315,47 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     }
 
     /**
-     * @param $index
-     * @throws InvalidArgumentException
-     * @throws ArgumentException
-     * @throws ArgumentOutOfRangeException
+     * @param int $index
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      * @return void
      */
     public function removeAt($index)
     {
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be numeric");
-        }
-
-        if ($index < 0) {
-            throw new ArgumentOutOfRangeException("Index is out of range ({$index})");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         if ($index < 0 || $index >= count($this->objects)) {
-            throw new ArgumentOutOfRangeException("Invalid index ({$index})");
+            throw new ArgumentOutOFRangeException('index', $index);
         }
         unset($this->objects[$index]);
         $this->objects = array_values($this->objects);
     }
 
     /**
-     * @param $index
-     * @param $count
-     * @throws ArgumentException
-     * @throws ArgumentOutOfRangeException
+     * @param int $index
+     * @param int $count
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      * @return void
      */
     public function removeRange($index, $count)
     {
-        if ($index < 0) {
-            throw new ArgumentOutOfRangeException("Index is not valid ({$index})");
+        if (!is_numeric($index)) {
+            throw new ArgumentNotNumericException('index', $index);
         }
 
-        if ($count < 0) {
-            throw new ArgumentOutOfRangeException("Count is not valid ({$count})");
+        if (!is_numeric($count)) {
+            throw new ArgumentNotNumericException('count', $index);
         }
 
-        if ($index + $count > $this->count()) {
-            throw new InvalidArgumentException("The range provided is not valid");
+        if ($index < 0 || $index > ($this->count() - 1)) {
+            throw new ArgumentOutOfRangeException('index', $index);
+        }
+
+        if ($count < 0 || $count > ($this->count() - $index)) {
+            throw new \OutOfRangeException('The range provided is out of bounds');
         }
 
         for ($i = $index; $count > 0; $count--) {
