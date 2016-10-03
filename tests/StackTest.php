@@ -56,11 +56,68 @@ class StackTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
     public function testPopUnderFlow()
     {
         $stack = new Stack();
         $stack->pop();
+    }
+
+    public function testCopyToDefaultBehavior()
+    {
+        $stack = new Stack(['one', 'two', 'three']);
+
+        $array = [];
+
+        $stack->copyTo($array);
+
+        $this->assertEquals(['one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexInMiddle()
+    {
+        $stack = new Stack(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing', 'now', 'done'];
+
+        $stack->copyTo($array, 2);
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    public function testCopyToWithIndexAtEnd()
+    {
+        $stack = new Stack(['one', 'two', 'three']);
+
+        $array = ['testing', 'testing'];
+
+        $stack->copyTo($array, count($array));
+
+        $this->assertEquals(['testing', 'testing', 'one', 'two', 'three'], $array);
+    }
+
+    /**
+     * @expectedException \OutOfRangeException
+     */
+    public function testCopyToIndexLessThanZero()
+    {
+        $array = ['one', 'two', 'three'];
+
+        $stack = new Stack();
+
+        $stack->copyTo($array, -1);
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testCopyToIndexNan()
+    {
+        $array = ['one', 'two', 'three'];
+
+        $stack = new Stack();
+
+        $stack->copyTo($array, 'j');
     }
 }

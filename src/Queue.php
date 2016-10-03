@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 class Queue implements CollectionInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
@@ -28,16 +31,17 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
     /**
      * @param array $array
      * @param $index
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
     public function copyTo(array &$array, $index = 0)
     {
         if ($index < 0) {
-            throw new InvalidArgumentException("Index must be a non negative number");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be a number");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         for ($i = 0; $i < count($this->objects); $i++) {
@@ -56,12 +60,12 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
 
     /**
      * @return mixed
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function dequeue()
     {
         if (!count($this->objects)) {
-            throw new InvalidOperationException("Attempt to take from an empty Queue");
+            throw new \UnderflowException('Inner array is empty');
         }
         return array_splice($this->objects, 0, 1)[0];
     }
@@ -96,7 +100,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
     public function peek()
     {
         if (!count($this->objects)) {
-            throw new \UnderflowException();
+            throw new \UnderflowException('Inner array is empty');
         }
         return $this->objects[0];
     }

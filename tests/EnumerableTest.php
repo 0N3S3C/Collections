@@ -127,7 +127,7 @@ class EnumerableTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\IndexOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testElementAtOutOfRange()
     {
@@ -173,7 +173,7 @@ class EnumerableTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
     public function testFirstWhenEmpty()
     {
@@ -210,7 +210,7 @@ class EnumerableTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
     public function testLastWhenEmpty()
     {

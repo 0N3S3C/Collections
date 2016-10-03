@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 class ArrayEnumerator implements EnumeratorInterface
 {
     protected $pairs = [];
@@ -71,16 +74,17 @@ class ArrayEnumerator implements EnumeratorInterface
     /**
      * @param int $position
      * @throws ArgumentOutOfRangeException
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
     public function seek($position)
     {
         if (!is_numeric($position)) {
-            throw new InvalidArgumentException("Seek position must be numeric");
+            throw new ArgumentNotNumericException('position', $position);
         }
 
         if ($position < 0 || $position >= count($this->pairs)) {
-            throw new ArgumentOutOfRangeException("Invalid seek position ({$position})");
+            throw new ArgumentOutOfRangeException('position', $position);
         }
         $this->position = $position;
     }

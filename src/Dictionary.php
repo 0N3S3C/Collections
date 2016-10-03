@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 class Dictionary implements DictionaryInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
@@ -27,12 +30,12 @@ class Dictionary implements DictionaryInterface, \Serializable, \JsonSerializabl
     /**
      * @param $key
      * @param $value
-     * @throws ArgumentException
+     * @throws \OverflowException
      */
     public function add($key, $value)
     {
         if ($this->containsKey($key)) {
-            throw new ArgumentException("Attempt to add duplicate key");
+            throw new \OverflowException('Key already exists');
         }
         $this->keys[] = $key;
         $this->values[] = $value;
@@ -77,16 +80,17 @@ class Dictionary implements DictionaryInterface, \Serializable, \JsonSerializabl
     /**
      * @param array $array
      * @param $index
-     * @throws ArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
     public function copyTo(array &$array, $index)
     {
         if ($index < 0) {
-            throw new ArgumentException("Index must be a non negative number");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         if (!is_numeric($index)) {
-            throw new ArgumentException("Index must be a number");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         for ($i = 0; $i < count($this->keys); $i++) {
@@ -160,12 +164,12 @@ class Dictionary implements DictionaryInterface, \Serializable, \JsonSerializabl
     /**
      * @param mixed $offset
      * @return mixed
-     * @throws ArgumentOutOfRangeException
+     * @throws \OutOfRangeException
      */
     public function offsetGet($offset)
     {
         if (!$this->offsetExists($offset)) {
-            throw new ArgumentOutOfRangeException("Invalid index ({$offset})");
+            throw new ArgumentOutOfRangeException('offset', $offset);
         }
         return $this->values[$this->keys->indexOf($offset)];
     }

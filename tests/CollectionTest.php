@@ -64,7 +64,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \OutOfRangeException
      */
     public function testCopyToIndexLessThanZero()
     {
@@ -76,7 +76,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testCopyToIndexNan()
     {
@@ -161,7 +161,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testGetItemOutOfBounds()
     {
@@ -171,7 +171,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testGetItemInvalidArgument()
     {
@@ -190,7 +190,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testSetItemOutOfBounds()
     {
@@ -200,7 +200,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testSetItemInvalidArgument()
     {
@@ -237,7 +237,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testRemoveAtInvalidArgument()
     {
@@ -247,7 +247,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testRemoveAtOutOfRange()
     {
@@ -295,7 +295,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testRemoveRangeOverflow()
     {
@@ -305,7 +305,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testRemoveRangeInvalidIndex()
     {
@@ -315,7 +315,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testRemoveRangeInvalidTypeIndex()
     {
@@ -325,7 +325,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testRemoveRangeInvalidTypeCount()
     {
@@ -344,7 +344,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testInsertInvalidArgument()
     {
@@ -363,7 +363,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testInsertAtNextIndexPlusOne()
     {
@@ -373,7 +373,7 @@ class CollectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\ArgumentOutOfRangeException
+     * @expectedException \OutOfRangeException
      */
     public function testInsertAtNegativeIndex()
     {

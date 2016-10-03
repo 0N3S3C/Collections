@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 class Stack implements CollectionInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
@@ -30,16 +33,17 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
     /**
      * @param array $array
      * @param $index
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
-    public function copyTo(array &$array, $index)
+    public function copyTo(array &$array, $index = 0)
     {
         if ($index < 0) {
-            throw new InvalidArgumentException("Index must be a non negative number");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be a number");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         for ($i = 0; $i < count($this->objects); $i++) {
@@ -74,24 +78,24 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
 
     /**
      * @return mixed
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function peek()
     {
         if (!count($this->objects)) {
-            throw new InvalidOperationException("Inner array is empty");
+            throw new \UnderflowException('Inner array is empty');
         }
         return $this->objects[count($this->objects) - 1];
     }
 
     /**
      * @return mixed
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function pop()
     {
         if (!count($this->objects)) {
-            throw new InvalidOperationException("Inner array is empty");
+            throw new \UnderflowException('Inner array is empty');
         }
         return array_pop($this->objects);
     }

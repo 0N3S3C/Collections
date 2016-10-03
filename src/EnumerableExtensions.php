@@ -2,6 +2,9 @@
 
 namespace Collections;
 
+use Collections\Exceptions\ArgumentNotNumericException;
+use Collections\Exceptions\ArgumentOutOfRangeException;
+
 trait EnumerableExtensions
 {
     /**
@@ -137,17 +140,17 @@ trait EnumerableExtensions
     /**
      * @param $index
      * @return mixed|null
-     * @throws IndexOutOfRangeException
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
+     * @throws \OutOfRangeException
      */
     public function elementAt($index)
     {
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         if ($index < 0 || $index >= $this->count()) {
-            throw new IndexOutOfRangeException("Index {$index} is out of bounds");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
         $counter = 0;
         $found = false;
@@ -164,7 +167,7 @@ trait EnumerableExtensions
         }
 
         if (!$found) {
-            throw new IndexOutOfRangeException("Index {$index} was not found");
+            throw new ArgumentOutOfRangeException('index', $index);
         }
 
         return $returnValue;
@@ -174,12 +177,12 @@ trait EnumerableExtensions
      * @param $index
      * @param null $default
      * @return mixed|null
-     * @throws InvalidArgumentException
+     * @throws \InvalidArgumentException
      */
     public function elementAtOrDefault($index, $default = null)
     {
         if (!is_numeric($index)) {
-            throw new InvalidArgumentException("Index must be numeric");
+            throw new ArgumentNotNumericException('index', $index);
         }
 
         if ($index < 0 || $index >= $this->count()) {
@@ -233,12 +236,12 @@ trait EnumerableExtensions
 
     /**
      * @return mixed|null
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function first()
     {
         if (!$this->count($this)) {
-            throw new InvalidOperationException("Cannot get first element of empty enumeration");
+            throw new \UnderflowException("Cannot get first element of empty enumeration");
         }
         $returnValue = null;
 
@@ -268,12 +271,12 @@ trait EnumerableExtensions
 
     /**
      * @return mixed|null
-     * @throws InvalidOperationException
+     * @throws \UnderflowException
      */
     public function last()
     {
         if (!$this->count()) {
-            throw new InvalidOperationException("Cannot get last element of empty enumeration");
+            throw new \UnderflowException("Cannot get last element of empty enumeration");
         }
 
         return $this->elementAt($this->count() - 1);

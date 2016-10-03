@@ -57,7 +57,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidOperationException
+     * @expectedException \UnderflowException
      */
     public function testDequeueUnderFlow()
     {
@@ -100,7 +100,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \OutOfRangeException
      */
     public function testCopyToIndexLessThanZero()
     {
@@ -112,7 +112,7 @@ class QueueTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @expectedException \Collections\InvalidArgumentException
+     * @expectedException \InvalidArgumentException
      */
     public function testCopyToIndexNan()
     {
