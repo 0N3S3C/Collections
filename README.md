@@ -4,7 +4,9 @@
 A library of collection types in PHP
 
 ## Getting Started
-```composer require jjware/collections```
+```
+composer require jjware/collections
+```
 
 ## Usage
 Collections can be instantiated from existing arrays or without any arguments. A simple example of using a collection would be:
@@ -50,6 +52,7 @@ EnumerableExtensions::count(): int
 EnumerableExtensions::countWhere(callable $predicate): int
 EnumerableExtensions::distinct(): Enumerable
 EnumerableExtensions::distinctWhere(EqualityComparerInterface $comparer): Enumerable
+EnumerableExtensions::each(callable $callback): void
 EnumerableExtensions::elementAt(int $index): mixed
 EnumerableExtensions::elementAtOrDefault(int $index, mixed $default): mixed
 EnumerableExtensions::except(array $ignore): Enumerable
