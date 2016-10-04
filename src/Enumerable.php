@@ -6,7 +6,7 @@ class Enumerable implements EnumerableInterface
 {
     use EnumerableExtensions;
 
-    private $subject;
+    private $subject = [];
 
     /**
      * Enumerable constructor.
@@ -14,7 +14,12 @@ class Enumerable implements EnumerableInterface
      */
     public function __construct(array $subject)
     {
-        $this->subject = $subject;
+        $counter = 0;
+
+        foreach ($subject as $item) {
+            $this->subject[$counter] = $item;
+            $counter++;
+        }
     }
 
     /**

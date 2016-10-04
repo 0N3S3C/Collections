@@ -9,17 +9,20 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
     
-    private $objects;
-    private $position = 0;
+    private $subject = [];
 
     /**
      * Stack constructor.
-     * @param array|null $array
+     * @param array $subject
      */
-    public function __construct(array $array = [])
+    public function __construct(array $subject = [])
     {
-        $this->objects = $array;
-        $this->position = 0;
+        $counter = 0;
+
+        foreach ($subject as $item) {
+            $this->subject[$counter] = $item;
+            $counter++;
+        }
     }
 
     /**
@@ -27,7 +30,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function clear()
     {
-        $this->objects = [];
+        $this->subject = [];
     }
 
     /**
@@ -46,8 +49,8 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('index', $index);
         }
 
-        for ($i = 0; $i < count($this->objects); $i++) {
-            $array[$index] = $this->objects[$i];
+        for ($i = 0; $i < count($this->subject); $i++) {
+            $array[$index] = $this->subject[$i];
             $index++;
         }
     }
@@ -57,7 +60,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function count()
     {
-        return count($this->objects);
+        return count($this->subject);
     }
 
     /**
@@ -65,7 +68,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function getIterator()
     {
-        return new ArrayEnumerator($this->objects);
+        return new ArrayEnumerator($this->subject);
     }
 
     /**
@@ -73,7 +76,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return json_encode($this->objects);
+        return json_encode($this->subject);
     }
 
     /**
@@ -82,10 +85,10 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function peek()
     {
-        if (!count($this->objects)) {
+        if (!count($this->subject)) {
             throw new \UnderflowException('Inner array is empty');
         }
-        return $this->objects[count($this->objects) - 1];
+        return $this->subject[count($this->subject) - 1];
     }
 
     /**
@@ -94,10 +97,10 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function pop()
     {
-        if (!count($this->objects)) {
+        if (!count($this->subject)) {
             throw new \UnderflowException('Inner array is empty');
         }
-        return array_pop($this->objects);
+        return array_pop($this->subject);
     }
 
     /**
@@ -105,7 +108,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function push($object)
     {
-        $this->objects[] = $object;
+        $this->subject[] = $object;
     }
 
     /**
@@ -113,7 +116,7 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function serialize()
     {
-        return serialize($this->objects);
+        return serialize($this->subject);
     }
 
     /**
@@ -121,6 +124,6 @@ class Stack implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function unserialize($data)
     {
-        $this->objects = unserialize($data);
+        $this->subject = unserialize($data);
     }
 }

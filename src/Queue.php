@@ -9,15 +9,20 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
     
-    private $objects;
+    private $subject = [];
 
     /**
      * Queue constructor.
-     * @param array|null $array
+     * @param array $subject
      */
-    public function __construct(array $array = [])
+    public function __construct(array $subject = [])
     {
-        $this->objects = $array;
+        $counter = 0;
+
+        foreach ($subject as $item) {
+            $this->subject[$counter] = $item;
+            $counter++;
+        }
     }
 
     /**
@@ -25,7 +30,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function clear()
     {
-        $this->objects = [];
+        $this->subject = [];
     }
 
     /**
@@ -44,8 +49,8 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('index', $index);
         }
 
-        for ($i = 0; $i < count($this->objects); $i++) {
-            $array[$index] = $this->objects[$i];
+        for ($i = 0; $i < count($this->subject); $i++) {
+            $array[$index] = $this->subject[$i];
             $index++;
         }
     }
@@ -55,7 +60,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function count()
     {
-        return count($this->objects);
+        return count($this->subject);
     }
 
     /**
@@ -64,10 +69,10 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function dequeue()
     {
-        if (!count($this->objects)) {
+        if (!count($this->subject)) {
             throw new \UnderflowException('Inner array is empty');
         }
-        return array_splice($this->objects, 0, 1)[0];
+        return array_splice($this->subject, 0, 1)[0];
     }
 
     /**
@@ -75,7 +80,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function enqueue($object)
     {
-        $this->objects[] = $object;
+        $this->subject[] = $object;
     }
 
     /**
@@ -83,7 +88,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function getIterator()
     {
-        return new ArrayEnumerator($this->objects);
+        return new ArrayEnumerator($this->subject);
     }
 
     /**
@@ -91,7 +96,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return json_encode($this->objects);
+        return json_encode($this->subject);
     }
 
     /**
@@ -99,10 +104,10 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function peek()
     {
-        if (!count($this->objects)) {
+        if (!count($this->subject)) {
             throw new \UnderflowException('Inner array is empty');
         }
-        return $this->objects[0];
+        return $this->subject[0];
     }
 
     /**
@@ -110,7 +115,7 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function serialize()
     {
-        return serialize($this->objects);
+        return serialize($this->subject);
     }
 
     /**
@@ -118,6 +123,6 @@ class Queue implements CollectionInterface, \Serializable, \JsonSerializable
      */
     public function unserialize($data)
     {
-        $this->objects = unserialize($data);
+        $this->subject = unserialize($data);
     }
 }

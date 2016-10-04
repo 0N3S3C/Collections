@@ -9,15 +9,20 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
 {
     use EnumerableExtensions;
     
-    protected $objects;
+    protected $subject = [];
 
     /**
      * Collection constructor.
-     * @param array $array
+     * @param array $subject
      */
-    public function __construct(array $array = [])
+    public function __construct(array $subject = [])
     {
-        $this->objects = $array;
+        $counter = 0;
+
+        foreach ($subject as $item) {
+            $this->subject[$counter] = $item;
+            $counter++;
+        }
     }
 
     /**
@@ -26,7 +31,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function add($object)
     {
-        $this->objects[] = $object;
+        $this->subject[] = $object;
     }
 
     /**
@@ -53,7 +58,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function clear()
     {
-        $this->objects = [];
+        $this->subject = [];
     }
 
     /**
@@ -62,7 +67,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function contains($object)
     {
-        return in_array($object, $this->objects);
+        return in_array($object, $this->subject);
     }
 
     /**
@@ -81,8 +86,8 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('index', $index);
         }
 
-        for ($i = 0; $i < count($this->objects); $i++) {
-            $array[$index] = $this->objects[$i];
+        for ($i = 0; $i < count($this->subject); $i++) {
+            $array[$index] = $this->subject[$i];
             $index++;
         }
     }
@@ -92,7 +97,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function count()
     {
-        return count($this->objects);
+        return count($this->subject);
     }
 
     /**
@@ -102,11 +107,11 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     public function exists(callable $predicate)
     {
         $result = false;
-        $count = count($this->objects);
+        $count = count($this->subject);
 
         for ($i = 0; $i < $count; $i++) {
 
-            if (call_user_func($predicate, $this->objects[$i])) {
+            if (call_user_func($predicate, $this->subject[$i])) {
                 $result = true;
                 break;
             }
@@ -122,12 +127,12 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     public function find(callable $predicate)
     {
         $result = null;
-        $count = count($this->objects);
+        $count = count($this->subject);
 
         for ($i = 0; $i < $count; $i++) {
 
-            if (call_user_func($predicate, $this->objects[$i])) {
-                $result = $this->objects[$i];
+            if (call_user_func($predicate, $this->subject[$i])) {
+                $result = $this->subject[$i];
                 break;
             }
         }
@@ -142,12 +147,12 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     public function findAll(callable $predicate)
     {
         $results = [];
-        $count = count($this->objects);
+        $count = count($this->subject);
 
         for ($i = 0; $i < $count; $i++) {
 
-            if (call_user_func($predicate, $this->objects[$i])) {
-                $results[] = $this->objects[$i];
+            if (call_user_func($predicate, $this->subject[$i])) {
+                $results[] = $this->subject[$i];
             }
         }
 
@@ -159,7 +164,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function getIterator()
     {
-        return new ArrayEnumerator($this->objects);
+        return new ArrayEnumerator($this->subject);
     }
 
     /**
@@ -170,9 +175,9 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     {
         $index = -1;
 
-        for ($i = 0; $i < count($this->objects); $i++) {
+        for ($i = 0; $i < count($this->subject); $i++) {
 
-            if ($this->objects[$i] == $object) {
+            if ($this->subject[$i] == $object) {
                 $index = $i;
                 break;
             }
@@ -194,15 +199,15 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('index', $index);
         }
 
-        if ($index < 0 || $index > count($this->objects)) {
+        if ($index < 0 || $index > count($this->subject)) {
             throw new ArgumentOutOfRangeException('index', $index);
         }
 
-        if ($index == count($this->objects)) {
-            $this->objects[] = $object;
+        if ($index == count($this->subject)) {
+            $this->subject[] = $object;
         }
         else {
-            array_splice($this->objects, $index, 0, $object);
+            array_splice($this->subject, $index, 0, $object);
         }
     }
 
@@ -211,7 +216,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function jsonSerialize()
     {
-        return json_encode($this->objects);
+        return json_encode($this->subject);
     }
 
     /**
@@ -225,7 +230,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('offset', $offset);
         }
 
-        return isset($this->objects[$offset]);
+        return isset($this->subject[$offset]);
     }
 
     /**
@@ -244,7 +249,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
             throw new ArgumentOutOfRangeException('offset', $offset);
         }
 
-        return $this->objects[$offset];
+        return $this->subject[$offset];
     }
 
     /**
@@ -263,7 +268,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
         if (!$this->offsetExists($offset)) {
             throw new ArgumentOutOfRangeException('offset', $offset);
         }
-        $this->objects[$offset] = $value;
+        $this->subject[$offset] = $value;
     }
 
     /**
@@ -286,16 +291,16 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     public function remove($object)
     {
         $found = false;
-        $count = count($this->objects);
+        $count = count($this->subject);
 
         for ($i = 0; $i < $count; ++$i) {
 
-            if ($this->objects[$i] == $object) {
-                unset($this->objects[$i]);
+            if ($this->subject[$i] == $object) {
+                unset($this->subject[$i]);
                 $found = true;
             }
         }
-        $this->objects = array_values($this->objects);
+        $this->subject = array_values($this->subject);
 
         return $found;
     }
@@ -326,11 +331,11 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
             throw new ArgumentNotNumericException('index', $index);
         }
 
-        if ($index < 0 || $index >= count($this->objects)) {
+        if ($index < 0 || $index >= count($this->subject)) {
             throw new ArgumentOutOFRangeException('index', $index);
         }
-        unset($this->objects[$index]);
-        $this->objects = array_values($this->objects);
+        unset($this->subject[$index]);
+        $this->subject = array_values($this->subject);
     }
 
     /**
@@ -368,7 +373,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function reverse()
     {
-        $this->objects = array_reverse($this->objects);
+        $this->subject = array_reverse($this->subject);
     }
 
     /**
@@ -376,7 +381,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function serialize()
     {
-        return serialize($this->objects);
+        return serialize($this->subject);
     }
 
     /**
@@ -387,7 +392,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
         if ($comparer == null) {
             $comparer = Comparer::create();
         }
-        usort($this->objects, [$comparer, 'compare']);
+        usort($this->subject, [$comparer, 'compare']);
     }
 
     /**
@@ -395,7 +400,7 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function toArray()
     {
-        return $this->objects;
+        return $this->subject;
     }
 
     /**
@@ -404,6 +409,6 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
      */
     public function unserialize($data)
     {
-        $this->objects = unserialize($data);
+        $this->subject = unserialize($data);
     }
 }
