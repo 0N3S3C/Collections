@@ -138,6 +138,16 @@ trait EnumerableExtensions
     }
 
     /**
+     * @param callable $callback
+     */
+    public function each(callable $callback)
+    {
+        foreach ($this as $item) {
+            $callback($item);
+        }
+    }
+
+    /**
      * @param $index
      * @return mixed|null
      * @throws \InvalidArgumentException

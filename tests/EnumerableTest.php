@@ -117,6 +117,18 @@ class EnumerableTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(new Enumerable(['one', 'three']), $result);
     }
 
+    public function testEach()
+    {
+        $enumerable = new Enumerable([1, 2, 3]);
+
+        $counter = 1;
+
+        $enumerable->each(function ($item) use (&$counter) {
+            $this->assertEquals($counter, $item);
+            $counter++;
+        });
+    }
+
     public function testElementAtInRange()
     {
         $enumerable = new Enumerable(['one', 'two', 'three']);
