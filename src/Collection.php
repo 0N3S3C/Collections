@@ -35,12 +35,12 @@ class Collection implements SeriesInterface, \Serializable, \JsonSerializable
     }
 
     /**
-     * @param EnumerableInterface $enumerable
+     * @param \Traversable $traversable
      * @return void
      */
-    public function addRange(EnumerableInterface $enumerable)
+    public function addRange(\Traversable $traversable)
     {
-        foreach ($enumerable as $object) {
+        foreach ($traversable as $object) {
             $this->add($object);
         }
     }
